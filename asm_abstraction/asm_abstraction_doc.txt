@@ -1,0 +1,215 @@
+
+// io is where ram allocations go
+io wram[$c000]{
+// 10 byte = 10 * byte = 10 * 1 = 10 bytes
+	text_buffer: 10 byte,
+// byte is... 1 byte
+	level: byte,
+// word is 2 bytes
+	hi_score: word,
+// 4 word = 4 * word = 4 * 2 = 8 bytes
+	test: 4 word,
+}
+
+io tilemap1[$9000]{
+	row1: 20 byte,
+	row2: 20 byte,
+}
+
+// subroutine, begins with the keyword `sub`
+// hl:source[] = alias hl to `source`, type is data only
+// de:dest$    = alias de to `dest`, type is RAM location or number
+// bc:length#  = alias bc to `length`, type is number only
+sub print_text(hl:source[], de:dest$, bc: length#){
+	my_loop:
+// @a means "use register `a` directly"
+// [..] means the same in asm
+		@a = [source++];
+		[dest] = @a;
+		dest++;
+		@bc--;
+		goto my_loop until ((@b | @c) == 0);
+		return;
+}
+
+sub main(){
+	// call functions the usual way
+	print_text(mytext, wram.text_buffer, len(mytext));
+	@hl = 4;
+	@hl++;
+	// `..` means "preserve "
+	print_text(.., wram.text_buffer, len(mytext));
+	// you can also specify functions using the "optional syntax"
+	print_text(dest=wram.text_buffer, source=mytext, length=len(mytext));
+	// with that syntax you can also omit
+	print_text(source=mytext, length=len(mytext));
+	purgatory:
+		goto purgatory;
+}
+
+data mytext{
+	"This is something", 0x00
+}
+
+//--------------------------------------------
+// Same code as above, but without comments
+
+io wram[$c000]{
+	text_buffer: 10 byte, level: byte,
+	hi_score: word, test: 4 word,
+}
+
+io tilemap1[$9000]{
+	row1: 20 byte, row2: 20 byte,
+}
+
+sub print_text(hl:source[], de:dest$, bc: length#){
+	my_loop:
+		@a = [source++]; [dest] = @a;
+		dest++; @bc--;
+		goto my_loop until ((@b | @c) == 0);
+	return;
+}
+
+sub main(){
+	print_text(mytext, wram.text_buffer, len(mytext));
+	@hl = 4;
+	@hl++;
+	print_text(.., wram.text_buffer, len(mytext));
+	print_text(dest=wram.text_buffer, source=mytext, length=len(mytext));
+	print_text(source=mytext, length=len(mytext));
+	purgatory:
+		goto purgatory;
+}
+
+data mytext{
+	"This is something", 0x00
+}
+
+//--------------------------------------------
+// Generated output with line comments
+
+; io wram[$c000]{
+wram EQU $c000
+; text_buffer: 10 byte,
+wram__text_buffer EQU wram
+; level: byte,
+wram__level EQU text_buffer + 10
+; hi_score: word,
+wram__hi_score EQU level + 1
+; test: 4 word,
+wram__test EQU hi_score + 2
+; }
+wram__END EQU test + (4 * 2)
+
+; io tilemap1[$9000]{
+tilemap1 EQU $9000
+; row1: 20 byte,
+tilemap1__row1 EQU tilemap1
+; row2: 20 byte,
+tilemap1__row2 EQU tilemap1__row1 + 20
+; }
+tilemap1__END EQU tilemap1__row2 + 20
+
+; sub print_text(hl:source[], de:dest$, bc: length#){
+print_text:
+; my_loop:
+.my_loop
+	; @a = [source++];
+		ld a, [hli]
+	;  [dest] = @a;
+		ld [de], a
+	; dest++
+		inc de
+	; @bc--
+		dec bc
+	; goto my_loop until ((@b | @c) == 0);
+		ld a, b				; (@b | @c)
+		or c				; ..
+		jr nz, .my_loop		; == 0, `goto my_loop until`
+	; return
+		ret
+
+; sub main(){
+main:
+	; print_text(mytext, wram.text_buffer, len(mytext));
+		ld hl, mytext
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+		call print_text
+	; @hl = 4;
+		ld hl, 4
+	; @hl++;
+		inc hl
+	; print_text(.., wram.text_buffer, len(mytext));
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+		call print_text
+	; print_text(dest=wram.text_buffer, source=mytext, length=len(mytext));
+		ld hl, mytext
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+	; print_text(source=mytext, length=len(mytext));
+		ld hl, mytext
+		ld bc, mytext__END - mytext
+		call print_text
+; purgatory:
+.purgatory
+	; goto purgatory;
+		jr .purgatory // jr or jp depends on the compiled stuff
+
+; data mytext{
+mytext:
+; "This is something", 0x00
+	db "This is something", 0
+; }
+mytext__END:
+
+//--------------------------------------------
+// Generated output without line comments
+
+wram EQU $c000
+wram__text_buffer EQU wram
+wram__level EQU text_buffer + 10
+wram__hi_score EQU level + 1
+wram__test EQU hi_score + 2
+wram__END EQU test + (4 * 2)
+
+tilemap1 EQU $9000
+tilemap1__row1 EQU tilemap1
+tilemap1__row2 EQU tilemap1__row1 + 20
+tilemap1__END EQU tilemap1__row2 + 20
+
+print_text:
+.my_loop
+		ld a, [hli]
+		ld [de], a
+		inc de
+		dec bc
+		ld a, b
+		or c
+		jr nz, .my_loop
+		ret
+
+main:
+		ld hl, mytext
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+		call print_text
+		ld hl, 4
+		inc hl
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+		call print_text
+		ld hl, mytext
+		ld de, wram__text_buffer
+		ld bc, mytext__END - mytext
+		ld hl, mytext
+		ld bc, mytext__END - mytext
+		call print_text
+.purgatory
+		jr .purgatory
+
+mytext:
+	db "This is something", 0
+mytext__END:
