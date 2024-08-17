@@ -1,0 +1,15 @@
+compile_commands.json
+.cache/
+.clang-format
+
+lemon/lemon
+lemon/lemon.exe
+
+convert
+convert.exe
+
+*.o
+*.out
+
+grammar.c
+grammar.h
