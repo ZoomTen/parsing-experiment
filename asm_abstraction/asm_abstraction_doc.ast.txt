@@ -1,0 +1,131 @@
+IoBlock
+ Identifier "wram" // name
+ Number 0xc000     // start
+ IoBlockContent
+  IoArea
+   Identifier "text_buffer" // name
+   Number 10                // size
+  IoArea
+   Identifier "level" // name
+   Number 1           // size
+  IoArea
+   Identifier "hi_score" // name
+   Number 2              // size
+  IoArea
+   Identifier "test" // name
+   Number 8          // size
+
+IoBlock
+ Identifier "tilemap1"
+ Number 0x9000
+ IoBlockContent
+  IoArea
+   Identifier "row1"
+   Number 20
+  IoArea
+   Identifier "row2"
+   Number 20
+
+SubBlock
+ Identifier "print_text" // name
+ SubBlockArgs
+  SubBlockArg
+   Register "hl"       // target
+   Identifier "source" // name
+   DataType "[]"
+  SubBlockArg
+   Register "de"
+   Identifier "dest"
+   DataType "$"
+  SubBlockArg
+   Register "bc"
+   Identifier "length"
+   DataType "#"
+ SubBlockContent
+  Label
+   Identifier "my_loop"
+  Assign
+   Register "a"
+   IndirectExpr
+    PostExpr "++"
+     Identifier "source"
+  Assign
+   IndirectExpr
+    Identifier "dest"
+   Register "a"
+  PostExpr "++"
+   Identifier "dest"
+  PostExpr "--"
+   Register "bc"
+  Goto
+   Identifier "my_loop"
+   Until
+    BinaryExpr "=="
+     BinaryExpr "|"
+      Register "b"
+      Register "c"
+     Number 0
+
+SubBlock
+ Identifier "main"
+ SubBlockArgs
+ SubBlockContent
+  SubCall
+   Identifier "print_text"
+   SubCallArgs
+    Member
+     Identifier "wram"
+     Identifier "text_buffer"
+    LengthOf
+     Identifier "my_text"
+  Assign
+   Register "hl"
+   Number 4
+  PostExpr "++"
+   Register "hl"
+  SubCall
+   Identifier "print_text"
+   SubCallArgs
+    OmitArg // .. means preserve this register
+    Member
+     Identifier "wram"
+     Identifier "text_buffer"
+    LengthOf
+     Identifier "my_text"
+  SubCall
+   Identifier "print_text"
+   SubCallArgs
+    NamedArg
+     Identifier "dest"
+     Member
+      Identifier "wram"
+      Identifier "text_buffer"
+    NamedArg
+     Identifier "source"
+     Identifier "my_text"
+    NamedArg
+     Identifier "length"
+     LengthOf
+      Identifier "my_text"
+  SubCall
+   Identifier "print_text"
+   SubCallArgs
+    NamedArg
+     Identifier "source"
+     Identifier "my_text"
+    NamedArg
+     Identifier "length"
+     LengthOf
+      Identifier "my_text"
+  Label
+   Identifier "purgatory"
+  Goto
+   Identifier "purgatory"
+   // no until condition
+
+DataBlock
+ Identifier "my_text"
+ RawBytes
+  String "This is something"
+  Number 0
+
