@@ -1,0 +1,11 @@
+    	
+		
+ 
+  $04:$5aaa "Section" {
+    sub a something(){
+        asm {
+            ld a, $10
+            ret
+        }
+    }
+  }

@@ -1,0 +1,6 @@
+switch("define", "useMalloc")
+switch("define", "danger")
+#switch("define", "nimPreviewSlimSystem")
+switch("threads", "off")
+switch("mm", "arc")
+switch("nimCache", "test")

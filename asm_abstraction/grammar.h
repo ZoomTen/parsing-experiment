@@ -1,0 +1,11 @@
+#define TK_HEX_NUMBER                       1
+#define TK_COLON                            2
+#define TK_STRING                           3
+#define TK_OPEN_BRACKET                     4
+#define TK_CLOSE_BRACKET                    5
+#define TK_IDENTIFIER                       6
+#define TK_SUB                              7
+#define TK_OPEN_PAREN                       8
+#define TK_CLOSE_PAREN                      9
+#define TK_ASM                             10
+#define TK_ASM_LITERAL                     11

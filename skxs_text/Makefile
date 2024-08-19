@@ -1,5 +1,5 @@
-CC=clang
-CFLAGS=-std=c99 -Weverything -Wno-unsafe-buffer-usage -Wno-gnu-case-range -O3
+CC=gcc
+CFLAGS=-std=c99 -Wall -Wno-unsafe-buffer-usage -Wno-gnu-case-range -O3
 ALL=convert ../lemon/lemon
 
 all: $(ALL)
