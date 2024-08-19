@@ -4,9 +4,19 @@
 
 /* must match order in ../shared.nim */
 %token
-    HEX_NUMBER COLON STRING OPEN_BRACKET
-    CLOSE_BRACKET IDENTIFIER SUB OPEN_PAREN
-    CLOSE_PAREN ASM ASM_LITERAL.
+    HEX_NUMBER
+    COLON
+    STRING
+    OPEN_BRACKET
+    CLOSE_BRACKET
+    IDENTIFIER
+    SUB
+    OPEN_PAREN
+    CLOSE_PAREN
+    ASM
+    ASM_LITERAL
+    REGISTER
+.
 
 /* storing additional information about my parser state */
 %extra_argument { InternalState *s }

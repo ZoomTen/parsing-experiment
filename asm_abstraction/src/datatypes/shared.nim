@@ -17,6 +17,7 @@ type
     CloseParen
     Asm
     AsmLiteral
+    Register
 
   # State of the lexer that can be accessed from Lemon
   # Must match corresponding struct in ./shared.h

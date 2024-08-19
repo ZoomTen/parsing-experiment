@@ -20,6 +20,8 @@ const
   `valid identifier starting characters` = `valid identifiers` - {'0' .. '9'}
   `whitespace characters` = {'\r', '\n', '\t', ' '}
   `valid hex characters` = {'0' .. '9'} + {'a' .. 'f'} + {'A' .. 'F'}
+  `valid 8 bit registers` =
+    {'a'} + {'f'} + {'b'} + {'c'} + {'d'} + {'e'} + {'h'} + {'l'}
 
 proc `init lexer from`*(buffer: string): LexerState =
   return LexerState(buffer: buffer, column: 1, line: 1)
@@ -183,6 +185,31 @@ proc `get next token`*(lexer: var LexerState): Token =
     )
     if result.kind == Asm:
       lexer.`inline hacks` = `Got asm`
+  # Register (TK_REGISTER)
+  of '@':
+    if 1.`characters are too much to ask`:
+      `notify error` "Expected at least 1 character after @ "
+      return result
+    var `temp reg string` = $`current char`()
+    `advance buffer`()
+    while `buffer not exhausted yet`():
+      # the length could be limited to 2 here, but it might have
+      # funny consequences for the parser...
+      if `current char`() in `valid 8 bit registers`:
+        `temp reg string`.add `current char`()
+        `advance buffer`()
+      else:
+        break
+    # sanity check
+    if (
+      let s = `temp reg string`[1 .. ^1]
+      s not_in ["a", "b", "c", "d", "e", "h", "l", "af", "bc", "de", "hl"]
+    ):
+      `notify error` "Invalid register " & s
+      return result
+    result.kind = Register
+    result.word = `make a copy of string` `temp reg string`
+    result.length = `temp reg string`.len.cint
   else:
     discard
   return result
