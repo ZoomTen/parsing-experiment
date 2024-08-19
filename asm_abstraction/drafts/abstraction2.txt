@@ -1,0 +1,30 @@
+$00:$10a5 "Test" {
+	sub something()
+	{
+		@a ^= @a;
+		@bc = 0x1000;
+		@a++;
+		@b++;
+	}
+}
+
+SectionBlock
+	RomSection
+		Number 0      // bank
+		Number 0x10a5 // address
+	Identifier "Test" // name
+	SectionContent
+		SubBlock
+			Identifier "something"
+			SubBlockArgs // empty
+			SubBlockContent
+				BinaryExpr "^="
+					Register "a"
+					Register "a"
+				Assign
+					Register "bc"
+					Number 0x1000;
+				PostExpr "++"
+					Register "a"
+				PostExpr "++"
+					Register "b"
