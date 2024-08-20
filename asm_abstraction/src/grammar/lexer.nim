@@ -16,12 +16,17 @@ type
     internal*: InternalState
 
 const
-  `valid identifiers` = {'a' .. 'z'} + {'A' .. 'Z'} + {'0' .. '9'} + {'_'}
-  `valid identifier starting characters` = `valid identifiers` - {'0' .. '9'}
+  `alphanumeric characters` = {'A' .. 'Z'} + {'a' .. 'z'}
+  `numerals` = {'0' .. '9'}
+  `valid identifier characters` = `alphanumeric characters` + `numerals` + {'_'}
+  `valid identifier starting characters` = `valid identifier characters` - `numerals`
   `whitespace characters` = {'\r', '\n', '\t', ' '}
   `valid hex characters` = {'0' .. '9'} + {'a' .. 'f'} + {'A' .. 'F'}
-  `valid 8 bit registers` =
-    {'a'} + {'f'} + {'b'} + {'c'} + {'d'} + {'e'} + {'h'} + {'l'}
+  `set of valid register letters` = {'a', 'b', 'c', 'd', 'e', 'f', 'h', 'l'}
+  `valid 8 bit registers` = ["a", "b", "c", "d", "e", "h", "l"]
+  `valid 16 bit registers` = ["bc", "de", "hl"]
+  `all valid registers` = @`valid 8 bit registers` & @`valid 16 bit registers`
+  `valid push pop registers` = `all valid registers` & @["af"]
 
 proc `init lexer from`*(buffer: string): LexerState =
   return LexerState(buffer: buffer, column: 1, line: 1)
@@ -47,13 +52,13 @@ proc `get next token`*(lexer: var LexerState): Token =
   template `make a copy of string`(what: string): cstring =
     # Essentially a `strdup`.
     let s = cast[cstring](alloc0impl(what.len + 1))
-    s[0].addr.copyMem(what[0].addr, what.len)
+    s[0].addr.`copy mem` what[0].addr, what.len
     s
 
   template `make a copy of token from`(`start position`: int): cstring =
     # Another `strdup`!
     let s = cast[cstring](alloc0impl(result.length + 1))
-    s[0].addr.copyMem(lexer.buffer[`start position`].addr, result.length)
+    s[0].addr.`copy mem` lexer.buffer[`start position`].addr, result.length
     s
 
   template `buffer not exhausted yet`(): bool =
@@ -63,7 +68,7 @@ proc `get next token`*(lexer: var LexerState): Token =
     lexer.position + amount > (lexer.buffer.len - 1)
 
   template `notify error`(error: string) {.dirty.} =
-    stderr.writeLine error, " at ", $`starting line`, ":", $`starting column`
+    stderr.`write line` error, " at ", $`starting line`, ":", $`starting column`
 
   template `save starting positions`() {.dirty.} =
     let
@@ -169,7 +174,7 @@ proc `get next token`*(lexer: var LexerState): Token =
     var `temp keyword` = $`current char`()
     `advance buffer`()
     while `buffer not exhausted yet`():
-      if `current char`() in `valid identifiers`:
+      if `current char`() in `valid identifier characters`:
         `temp keyword`.add `current char`()
         `advance buffer`()
       else:
@@ -195,16 +200,13 @@ proc `get next token`*(lexer: var LexerState): Token =
     while `buffer not exhausted yet`():
       # the length could be limited to 2 here, but it might have
       # funny consequences for the parser...
-      if `current char`() in `valid 8 bit registers`:
+      if `current char`() in `set of valid register letters`:
         `temp reg string`.add `current char`()
         `advance buffer`()
       else:
         break
     # sanity check
-    if (
-      let s = `temp reg string`[1 .. ^1]
-      s not_in ["a", "b", "c", "d", "e", "h", "l", "af", "bc", "de", "hl"]
-    ):
+    if (let s = `temp reg string`[1 .. ^1]; s not_in `all valid registers`):
       `notify error` "Invalid register " & s
       return result
     result.kind = Register
