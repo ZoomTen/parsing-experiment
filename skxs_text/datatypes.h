@@ -4,8 +4,8 @@
 
 struct Token
 {
-	const char *origin;
-	const char *where;
+	const char *origin; /* The entire original source text from whence this token came. */
+	const char *where; /* The exact starting point of the token. */
 	size_t length;
 	int which;
 };

@@ -23,7 +23,7 @@
 start ::= program.
 
 program ::= org COLON body. /* A single define */
-program ::= org COLON body program. /* Multiple defines */
+program ::= program org COLON body. /* Multiple defines */
 
 /* @org $xx, $yyyy: */
 org ::= ORG HEXNUM(A) COMMA HEXNUM(B).
@@ -31,7 +31,7 @@ org ::= ORG HEXNUM(A) COMMA HEXNUM(B).
     char *bank_num = copy_token_string(A);
     char *addr = copy_token_string(B);
     {
-        fprintf(OUT_BUF, "text_%s_%s::\n", bank_num + 1, addr + 1);
+        fprintf(OUT_BUF, "\ntext_%s_%s::\n", bank_num + 1, addr + 1);
     }
     free(addr);
     free(bank_num);
@@ -45,7 +45,7 @@ org ::= ORG HEXNUM(A) COMMA HEXNUM(B)
     char *addr = copy_token_string(B);
     char *id = copy_token_string(C);
     {
-        fprintf(OUT_BUF, "%s:: ; %s:%s\n", id, bank_num + 1, addr + 1);
+        fprintf(OUT_BUF, "\n%s:: ; %s:%s\n", id, bank_num + 1, addr + 1);
     }
     free(id);
     free(addr);
@@ -53,7 +53,7 @@ org ::= ORG HEXNUM(A) COMMA HEXNUM(B)
 }
 
 body ::= stmt SEMICOLON. /* A single statement */
-body ::= stmt SEMICOLON body. /* Multiple statements */
+body ::= body stmt SEMICOLON. /* Multiple statements */
 
 arg ::= IDENTIFIER.
 arg ::= HEXNUM.
@@ -77,11 +77,18 @@ stmt ::= TEXT QUOTED_STRING(A).
     {
         size_t l = strlen(txt);
         size_t i;
-        for (i = 1; i < l-1; i++)
+
+        /* TODO: assumes full UTF-8 */
+        /* TODO: scan the character map and automatically determine the correct charmap set */
+        for (i = 1; i < l-1; i+=3)
         {
-            fprintf(OUT_BUF, "\t0x%02x\n", txt[i] & 0xff);
+            fprintf(
+                OUT_BUF, "\ttext \"%c%c%c\", ??\n",
+                txt[i] & 0xff,
+                txt[i + 1] & 0xff,
+                txt[i + 2] & 0xff
+            );
         }
-        fprintf(OUT_BUF, "\t%s\n", txt);
     }
     free(txt);
 }
