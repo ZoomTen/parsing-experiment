@@ -103,6 +103,9 @@ proc `get next token`*(lexer: var LexerState): Token =
     if s == '\n': # I assume Unix or DOS files
       lexer.column = 1
       lexer.line += 1
+    # stop if we're over the end of the buffer
+    if not `buffer not exhausted yet`():
+      return result
 
   result.position = lexer.position.cint
   `save starting positions`()

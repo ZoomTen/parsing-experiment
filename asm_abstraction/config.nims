@@ -1,5 +1,5 @@
 switch("define", "useMalloc")
-switch("define", "danger")
+switch("define", "release")
 #switch("define", "nimPreviewSlimSystem")
 switch("threads", "off")
 switch("mm", "orc")

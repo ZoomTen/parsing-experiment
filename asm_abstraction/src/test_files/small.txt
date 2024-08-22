@@ -1,15 +1,30 @@
-$04:$5aaa "Section" {}
-$09:$4888 "test" {
-  sub test(){
-    asm{
-Test:
-      ld a, $10
-      ret
-    }
-  }
-}
-$00:$1000 "nothing" {
-  sub a1(){}
-  sub a2(){}
-  data test{}
+$39:$49c2 "Intro hijack"
+{
+	sub SomeUnimportantStuffIdk()
+	{
+		asm
+		{
+			ld b, $10
+			call $3583
+			call $3546
+		}
+	}
+
+	sub Intro()
+	{
+		asm
+		{
+			ld a, %11100100
+			ldh [rBGP], a
+
+			xor a
+			ld [wSongId], a
+			ld [wSongId + 1], a
+			call LoadStandardFont
+
+			hlcoord 2, 2
+			ld de, .MenuText
+			call PlaceString
+		}
+	}
 }

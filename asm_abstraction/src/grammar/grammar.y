@@ -23,6 +23,11 @@
 %extra_argument { InternalState *s }
 
 /* rules */
+
+/*
+ * The first rule of the grammar, all it does is assign the
+ * generated tree to to our internal state.
+ */
 start ::= program(A).
 {
     s->tree = A;
@@ -50,7 +55,7 @@ section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET subs_datas(D) CLOSE_BRACKET
 }
 
 /*
- * can't just do empty subs_datas because of a parser conflict,
+ * Can't just do empty subs_datas because of a parser conflict,
  * and can't do subs_datas optional because the value isn't guaranteed
  * to be nil if it isn't there.
  */
@@ -142,11 +147,6 @@ asm(A) ::= ASM OPEN_BRACKET ASM_LITERAL(B) CLOSE_BRACKET.
     A->asm_content = B.word;
 }
 
-// sub_body ::= asm.
-// sub_body ::= sub_body asm.
-
-// asm ::= ASM OPEN_BRACKET ASM_LITERAL CLOSE_BRACKET.
-
 %syntax_error
 {
     printf("Error :(\n");
@@ -158,4 +158,18 @@ asm(A) ::= ASM OPEN_BRACKET ASM_LITERAL(B) CLOSE_BRACKET.
     #include "../datatypes/shared.h"
     #include "../datatypes/utils.h"
     #include <string.h>
+
+	/*
+	 * Nim does not allow changing the discriminant in an object variant;
+	 * it results in a FieldDefect in release mode.
+	*
+	 * Here, we insist that we "know what we're doing" and change it
+	 * right here through C code.
+	 */
+	Node *make_node(NodeKind kind)
+	{
+		Node *r = make_node_raw();
+		r->_ = kind;
+		return r;
+	}
 }

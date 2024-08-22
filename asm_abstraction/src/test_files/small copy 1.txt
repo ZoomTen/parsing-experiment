@@ -1,0 +1,15 @@
+$04:$5aaa "Section" {}
+$09:$4888 "test" {
+  sub test(){
+    asm{
+Test:
+      ld a, $10
+      ret
+    }
+  }
+}
+$00:$3fff "nothing" {
+  sub a1(){}
+  sub a2(){}
+  data test{}
+}
