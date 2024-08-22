@@ -1,3 +1,4 @@
+import std/syncio
 import ../datatypes/shared
 
 type
@@ -166,7 +167,12 @@ proc `get next token`*(lexer: var LexerState): Token =
       `notify error` "Unterminated string literal starting"
       return result
     result.kind = String
-    result.word = `make a copy of token from` `start position`
+    result.word = (
+      let # Special case here, we need the token to be without quotes
+        s = cast[cstring](alloc0impl(result.length))
+      s[0].addr.`copy mem` lexer.buffer[`start position` + 1].addr, (result.length - 2)
+      s
+    )
   # Identifier (TK_IDENTIFIER)
   # Sub (TK_SUB)
   # Asm (TK_ASM)
@@ -186,6 +192,7 @@ proc `get next token`*(lexer: var LexerState): Token =
       case `temp keyword`
       of "sub": Sub
       of "asm": Asm
+      of "data": Data
       else: Identifier
     )
     if result.kind == Asm:

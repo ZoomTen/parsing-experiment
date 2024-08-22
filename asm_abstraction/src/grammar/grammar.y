@@ -16,33 +16,136 @@
     ASM
     ASM_LITERAL
     REGISTER
+    DATA
 .
 
 /* storing additional information about my parser state */
 %extra_argument { InternalState *s }
 
 /* rules */
-start ::= program.
+start ::= program(A).
 {
-    printf("Got start\n");
+    s->tree = A;
 }
 
-program ::= section.
-program ::= program section.
-program ::= program_parts.
+%type program { ProgramNode* }
+program(A) ::= section(B).
+{
+    A = (ProgramNode *) make_node(N_PROGRAM);
+    add_node_generic(&A->program_items, B);
+}
 
-section ::= rom_address STRING OPEN_BRACKET program_parts CLOSE_BRACKET.
-rom_address ::= HEX_NUMBER COLON HEX_NUMBER.
+program(A) ::= program(A) section(B).
+{
+    add_node_generic(&A->program_items, B);
+}
 
-program_parts ::= sub.
-program_parts ::= program_parts sub.
+%type section { SectionBlockNode* }
+section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET subs_datas(D) CLOSE_BRACKET.
+{
+    A = (SectionBlockNode *) make_node(N_SECTION_BLOCK);
+    assign_node_ref_generic(&A->at_address, B);
+    A->section_name = C.word;
+    A->section_content = D;
+}
 
-sub ::= SUB IDENTIFIER OPEN_PAREN CLOSE_PAREN OPEN_BRACKET sub_body CLOSE_BRACKET.
+/*
+ * can't just do empty subs_datas because of a parser conflict,
+ * and can't do subs_datas optional because the value isn't guaranteed
+ * to be nil if it isn't there.
+ */
+section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET CLOSE_BRACKET.
+{
+    A = (SectionBlockNode *) make_node(N_SECTION_BLOCK);
+    assign_node_ref_generic(&A->at_address, B);
+    A->section_name = C.word;
+}
 
-sub_body ::= asm.
-sub_body ::= sub_body asm.
+%type rom_address { RomAddressNode* }
+rom_address(A) ::= HEX_NUMBER(B) COLON HEX_NUMBER(C).
+{
+    A = (RomAddressNode *) make_node(N_ROM_ADDRESS);
+    A->bank = number_from_hex_token(B);
+    A->address = number_from_hex_token(C);
+    A->flattened_address = (
+        A->bank == 0
+            ? A->address
+            : ((A->bank * 0x4000) + (A->address - 0x4000))
+    );
+}
 
-asm ::= ASM OPEN_BRACKET ASM_LITERAL CLOSE_BRACKET.
+%type subs_datas { SubAndDataListNode* }
+subs_datas(A) ::= sub(B).
+{
+    A = (SubAndDataListNode *) make_node(N_SUB_AND_DATA_LIST);
+    add_node_generic(&A->subs_datas, B);
+}
+
+subs_datas(A) ::= subs_datas(A) sub(B).
+{
+    add_node_generic(&A->subs_datas, B);
+}
+
+subs_datas(A) ::= data(B).
+{
+    A = (SubAndDataListNode *) make_node(N_SUB_AND_DATA_LIST);
+    add_node_generic(&A->subs_datas, B);
+}
+
+subs_datas(A) ::= subs_datas(A) data(B).
+{
+    add_node_generic(&A->subs_datas, B);
+}
+
+%type sub { SubBlockNode* }
+sub(A) ::= SUB IDENTIFIER(B) OPEN_PAREN CLOSE_PAREN OPEN_BRACKET CLOSE_BRACKET.
+{
+    A = (SubBlockNode *) make_node(N_SUB_BLOCK);
+    A->sub_name = B.word;
+}
+
+sub(A) ::= SUB IDENTIFIER(B) OPEN_PAREN CLOSE_PAREN OPEN_BRACKET sub_content(C) CLOSE_BRACKET.
+{
+    A = (SubBlockNode *) make_node(N_SUB_BLOCK);
+    A->sub_name = B.word;
+    A->sub_content = C;
+}
+
+%type data { DataBlockNode* }
+data(A) ::= DATA IDENTIFIER(B) OPEN_BRACKET CLOSE_BRACKET.
+{
+    A = (DataBlockNode *) make_node(N_DATA_BLOCK);
+    A->data_name = B.word;
+}
+
+%type sub_content { SubContentNode* }
+sub_content(A) ::= asm(B).
+{
+    A = (SubContentNode *) make_node(N_SUB_CONTENT);
+    add_node_generic(&A->sub_items, B);
+}
+
+sub_content(A) ::= sub_content(A) asm(B).
+{
+    add_node_generic(&A->sub_items, B);
+}
+
+%type asm { AsmLiteralNode* }
+asm(A) ::= ASM OPEN_BRACKET CLOSE_BRACKET.
+{
+    A = (AsmLiteralNode *) make_node(N_ASM_LITERAL);
+}
+
+asm(A) ::= ASM OPEN_BRACKET ASM_LITERAL(B) CLOSE_BRACKET.
+{
+    A = (AsmLiteralNode *) make_node(N_ASM_LITERAL);
+    A->asm_content = B.word;
+}
+
+// sub_body ::= asm.
+// sub_body ::= sub_body asm.
+
+// asm ::= ASM OPEN_BRACKET ASM_LITERAL CLOSE_BRACKET.
 
 %syntax_error
 {
@@ -53,4 +156,6 @@ asm ::= ASM OPEN_BRACKET ASM_LITERAL CLOSE_BRACKET.
 {
     #include <stdio.h>
     #include "../datatypes/shared.h"
+    #include "../datatypes/utils.h"
+    #include <string.h>
 }

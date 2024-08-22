@@ -16,7 +16,7 @@ before build:
     if findExe("./lemon") == "":
       exec("make")
     # compile the grammar stuff
-    exec("./lemon " & thisDir() & "/src/grammar/grammar.y")
+    exec("./lemon -l " & thisDir() & "/src/grammar/grammar.y")
 
 after clean:
   # clean the grammar stuff

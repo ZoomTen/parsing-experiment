@@ -11,8 +11,10 @@ proc `destroy Lemon parser using`*(
 ): void {.cdecl, importc: "ParseFree".}
 
 proc `parse token with Lemon parser`*(
-  which: pointer, `token id`: cint, `where to`: Token, `extra arg`: InternalState
+  which: pointer, `token id`: cint, `where to`: Token, `extra arg`: ptr InternalState
 ): void {.cdecl, importc: "Parse".}
 
-template `end Lemon parsing`*(which: pointer): void =
-  which.`parse token with Lemon parser`(0, Token(), InternalState())
+template `end Lemon parsing`*(
+    which: pointer, state: ptr InternalState
+): void =
+  which.`parse token with Lemon parser`(0, Token(), state)

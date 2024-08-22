@@ -1,11 +1,15 @@
-    	
-		
- 
-  $04:$5aaa "Section" {
-    sub a something(){
-        asm {
-            ld a, $10
-            ret
-        }
+$04:$5aaa "Section" {}
+$09:$4888 "test" {
+  sub test(){
+    asm{
+Test:
+      ld a, $10
+      ret
     }
   }
+}
+$00:$1000 "nothing" {
+  sub a1(){}
+  sub a2(){}
+  data test{}
+}
