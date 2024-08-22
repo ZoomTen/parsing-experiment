@@ -8,7 +8,7 @@
 /*
  * A hand-made tokenizer, lexer, whatever it's called.
  */
-struct Token
+struct TxtToken
 get_next_token(
 	/*
 	 * A view onto some buffer that the caller determines. As this is going to
@@ -26,7 +26,9 @@ get_next_token(
 	long *bytes_to_go)
 {
 	/* Set the defaults */
-	struct Token result = { .which = TK_invalid, .where = NULL, .length = 0 };
+	struct TxtToken result = { .which = TK_invalid,
+							   .where = NULL,
+							   .length = 0 };
 
 	/*
 	 * Sanity check, this can't continue when it runs out of bytes to process.

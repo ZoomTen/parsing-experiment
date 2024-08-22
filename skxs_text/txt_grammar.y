@@ -1,6 +1,6 @@
 /* settings */
 %name TxtParse
-%token_type {struct Token}
+%token_type {struct TxtToken}
 %token_prefix TK_
 
 /* make output predictable */
@@ -120,7 +120,7 @@ stmt ::= DONE.
     #include <stdlib.h>
 
     /* Spits out a copy of what the detected token was. */
-    char *copy_token_string(struct Token t)
+    char *copy_token_string(struct TxtToken t)
     {
         if (!t.where)
         {
@@ -132,7 +132,7 @@ stmt ::= DONE.
     }
 
     /* Not quite as good yet... */
-    void report_syntax_error(struct Token t)
+    void report_syntax_error(struct TxtToken t)
     {
         char *n = NULL;
         if (t.where != NULL)

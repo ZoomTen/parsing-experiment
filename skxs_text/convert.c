@@ -6,7 +6,7 @@
 
 /* lemon functions */
 extern void *TxtParseAlloc(void *(*mallocproc)(size_t));
-extern void TxtParse(void *, int, struct Token, struct ExtraState *);
+extern void TxtParse(void *, int, struct TxtToken, struct ExtraState *);
 extern void TxtParseFree(void *, void (*freeProc)(void *));
 
 int
@@ -37,7 +37,7 @@ main(void)
 	fprintf(ERR_BUF, "File loaded\n");
 
 	{ /* 2. Tokenize and parse it in one go, thanks to Lemon */
-		struct Token token;
+		struct TxtToken token;
 		const char *buf_view = &buf[0];
 		long bytes_to_go = (long) sizeof(buf);
 		void *parser = NULL;

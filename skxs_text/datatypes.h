@@ -2,7 +2,7 @@
 #define DATATYPES_H
 #include <stddef.h>
 
-struct Token
+struct TxtToken
 {
 	const char *origin; /* The entire original source text from whence this token came. */
 	const char *where; /* The exact starting point of the token. */
