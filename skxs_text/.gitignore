@@ -8,5 +8,5 @@ convert.exe
 *.o
 *.out
 
-grammar.c
-grammar.h
+txt_grammar.c
+txt_grammar.h

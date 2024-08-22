@@ -5,9 +5,9 @@
 #include <stdlib.h>
 
 /* lemon functions */
-extern void *ParseAlloc(void *(*mallocproc)(size_t));
-extern void Parse(void *, int, struct Token, struct ExtraState *);
-extern void ParseFree(void *, void (*freeProc)(void *));
+extern void *TxtParseAlloc(void *(*mallocproc)(size_t));
+extern void TxtParse(void *, int, struct Token, struct ExtraState *);
+extern void TxtParseFree(void *, void (*freeProc)(void *));
 
 int
 main(void)
@@ -46,7 +46,7 @@ main(void)
 		fprintf(ERR_BUF, "%lu bytes remain\n", bytes_to_go);
 
 		/* prepare the parser engine */
-		parser = ParseAlloc(malloc);
+		parser = TxtParseAlloc(malloc);
 		assert(parser);
 
 		/* perform lexing and parsing in one go */
@@ -56,7 +56,7 @@ main(void)
 			token.origin = &buf[0];
 			if (token.which > TK_invalid)
 			{
-				Parse(parser, token.which, token, &s);
+				TxtParse(parser, token.which, token, &s);
 				if (s.has_error)
 				{
 					break;
@@ -65,8 +65,8 @@ main(void)
 		} while (token.which > TK_invalid);
 
 		/* end parsing */
-		Parse(parser, 0, token, &s);
-		ParseFree(parser, free);
+		TxtParse(parser, 0, token, &s);
+		TxtParseFree(parser, free);
 
 		fprintf(ERR_BUF,
 				"\n%lu bytes remain, last token %d\n",

@@ -12,15 +12,15 @@ all: $(ALL)
 
 ../lemon/lemon: CFLAGS=-std=c99 -O3
 
-convert: convert.c lexer.c grammar.o
+convert: convert.c lexer.c txt_grammar.o
 convert.c: datatypes.h
-lexer.c: datatypes.h grammar.h
+lexer.c: datatypes.h txt_grammar.h
 
-grammar.y: datatypes.h
-grammar.o: CFLAGS=-c -std=c99 -O3
-grammar.c grammar.h grammar.out: grammar.y ../lemon/lemon
+txt_grammar.y: datatypes.h
+txt_grammar.o: CFLAGS=-c -std=c99 -O3
+txt_grammar.c txt_grammar.h txt_grammar.out: txt_grammar.y ../lemon/lemon
 	cd ../lemon && ./lemon ../skxs_text/$<
 
 clean:
 	rm -fv $(ALL)
-	rm -fv grammar.c grammar.h grammar.out grammar.o
+	rm -fv txt_grammar.c txt_grammar.h txt_grammar.out txt_grammar.o

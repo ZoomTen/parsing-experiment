@@ -1,7 +1,7 @@
 #include <string.h>
 #include "lexer.h"
 #include "datatypes.h"
-#include "grammar.h"
+#include "txt_grammar.h"
 #include <stdio.h>
 #include <stdlib.h>
 

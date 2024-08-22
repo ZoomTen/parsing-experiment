@@ -1,4 +1,5 @@
 /* settings */
+%name TxtParse
 %token_type {struct Token}
 %token_prefix TK_
 
