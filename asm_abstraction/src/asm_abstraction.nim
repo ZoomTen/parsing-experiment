@@ -100,9 +100,8 @@ proc `convert to asm`(p: NodeRef): void =
     return
 
 proc main(): int =
-  # First, initialize the lexer by using a compile-time string for now
-  let str = `read file`("src/test_files/small.txt")
-  var lxs = `init lexer from` str
+  let buffer = `read file`("src/test_files/small.txt")
+  var `lex state` = `init lexer from` buffer
 
   # Prepare the token bin, because I'm gonna print it for test purposes
   var tokens: seq[Token] = @[]
@@ -110,23 +109,23 @@ proc main(): int =
   let parser = `allocate Lemon parser using` `standard malloc`
 
   # Go through all the tokens...
-  var token = lxs.`get next token`()
+  var token = `lex state`.`get next token`()
   while token.kind != Invalid:
     # ...adding them to the bin in the process.
     tokens.add token
     parser.`parse token with Lemon parser`(
-      cast[cint](token.kind), token, lxs.internal.addr
+      cast[cint](token.kind), token, `lex state`.internal.addr
     )
-    token = lxs.`get next token`()
+    token = `lex state`.`get next token`()
   # We either got an invalid token or it really is the end of the buffer.
-  parser.`end Lemon parsing`(lxs.internal.addr)
+  parser.`end Lemon parsing`(`lex state`.internal.addr)
 
   # Print the tokens we have so far.
   when not defined(nimPreviewSlimSystem):
     print(tokens)
-    print(lxs.internal.tree)
+    print(`lex state`.internal.tree)
 
-  lxs.internal.tree.`convert to asm`()
+  `lex state`.internal.tree.`convert to asm`()
 
   # Finally, do cleanup
   parser.`destroy Lemon parser using` `standard free`
