@@ -1816,7 +1816,7 @@ NEWCHARMAP charmap7
 
 NEWCHARMAP charmap8
 ; 44:4000
-; 
+;
 	charmap "Ｇ", $00
 	charmap "Ｊ", $01
 	charmap "Ｑ", $02
@@ -2108,4 +2108,3 @@ NEWCHARMAP charmap9
 	charmap "乏", $3d
 	charmap "隕", $3e
 	charmap "遵", $3f
-

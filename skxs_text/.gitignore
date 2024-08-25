@@ -2,11 +2,12 @@ compile_commands.json
 .cache/
 .clang-format
 
-convert
-convert.exe
+tx_parse
+tx_parse.exe
 
 *.o
-*.out
 
-txt_grammar.c
-txt_grammar.h
+src/lexer/*.l.c
+src/parser/*.c
+src/parser/*.h
+src/parser/*.out

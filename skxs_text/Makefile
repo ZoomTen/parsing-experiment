@@ -1,26 +1,50 @@
-CC=gcc
-CFLAGS=-std=c99 -Wall -Wno-unsafe-buffer-usage -Wno-gnu-case-range -O3
-ALL=convert ../lemon/lemon
+.SUFFIXES:
+.PHONY: all lemon clean
+.SECONDARY:
 
-all: $(ALL)
+OBJECTS := \
+	src/driver.o \
+	\
+	src/lexer/script.o \
+	src/lexer/charmap.l.o \
+	\
+	src/parser/script.o \
+	src/parser/charmap.o \
+	\
+	src/process/charmap.o \
+	src/process/script.o
 
-%: %.c
-	$(CC) $(CFLAGS) -o $@ $^
+CC := gcc
+LEX := flex
+CFLAGS_ := $(CFLAGS) -std=c99 -Wall -Wno-unsafe-buffer-usage -Wno-gnu-case-range -O3
+LEXOPTS := -L
+LEMOPTS := -l
+
+all: tx_parse
+
+lemon:
+	$(MAKE) -C ../lemon
+
+tx_parse: $(OBJECTS)
+	$(CC) $(CFLAGS_) -o $@ $^
 
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) -c $(CFLAGS_) -o $@ $<
 
-../lemon/lemon: CFLAGS=-std=c99 -O3
+%.l.c: %.l
+	$(LEX) $(LEXOPTS) -o $@ $<
 
-convert: convert.c lexer.c txt_grammar.o
-convert.c: datatypes.h
-lexer.c: datatypes.h txt_grammar.h
+src/parser/%.c src/parser/%.h src/parser/%.out: src/parser/%.y lemon
+	../lemon/lemon $(LEMOPTS) $<
 
-txt_grammar.y: datatypes.h
-txt_grammar.o: CFLAGS=-c -std=c99 -O3
-txt_grammar.c txt_grammar.h txt_grammar.out: txt_grammar.y ../lemon/lemon
-	cd ../lemon && ./lemon ../skxs_text/$<
+src/lexer/script.c: src/parser/script.h
+
+src/lexer/charmap.l.c: src/parser/charmap.h
 
 clean:
-	rm -fv $(ALL)
-	rm -fv txt_grammar.c txt_grammar.h txt_grammar.out txt_grammar.o
+	rm -fv \
+		$(OBJECTS) \
+		src/lexer/*.l.c \
+		src/parser/*.c \
+		src/parser/*.h \
+		src/parser/*.out

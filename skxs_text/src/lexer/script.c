@@ -1,14 +1,14 @@
 #include <string.h>
-#include "lexer.h"
-#include "datatypes.h"
-#include "txt_grammar.h"
+#include "../parser/script.h"
+#include "../datatypes.h"
+#include "script.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 /*
  * A hand-made tokenizer, lexer, whatever it's called.
  */
-struct TxtToken
+struct ScriptToken
 get_next_token(
 	/*
 	 * A view onto some buffer that the caller determines. As this is going to
@@ -26,9 +26,9 @@ get_next_token(
 	long *bytes_to_go)
 {
 	/* Set the defaults */
-	struct TxtToken result = { .which = TK_invalid,
-							   .where = NULL,
-							   .length = 0 };
+	struct ScriptToken result = { .which = SCR_TK_invalid,
+								  .where = NULL,
+								  .length = 0 };
 
 	/*
 	 * Sanity check, this can't continue when it runs out of bytes to process.
@@ -77,7 +77,7 @@ get_next_token(
 	/* Check again, just in case. */
 	if (*bytes_to_go < 1)
 	{
-		fprintf(ERR_BUF, "no token to be found after whitespace...\n");
+		/* fprintf(ERR_BUF, "no token to be found after whitespace...\n"); */
 		return result;
 	}
 
@@ -85,7 +85,7 @@ get_next_token(
 	result.where = *view;
 	switch (**view)
 	{
-		case '@': /* TK_ORG '@org' */
+		case '@': /* SCR_TK_ORG '@org' */
 		{
 			/*
 			 * Peek into the next few characters to
@@ -108,13 +108,13 @@ get_next_token(
 				return result;
 			}
 
-			result.which = TK_ORG;
+			result.which = SCR_TK_ORG;
 			result.length = 4;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case '$': /* TK_HEX_NUM '$abcdef' */
+		case '$': /* SCR_TK_HEX_NUM '$abcdef' */
 		{
 			/* Peek as far as possible to get the entire number */
 			size_t ii;
@@ -146,23 +146,23 @@ get_next_token(
 				return result;
 			}
 
-			result.which = TK_HEXNUM;
+			result.which = SCR_TK_HEXNUM;
 			result.length = final_size;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case '(': /* TK_LEFT_PAREN '(' */
+		case '(': /* SCR_TK_LEFT_PAREN '(' */
 		{
-			result.which = TK_LEFT_PAREN;
+			result.which = SCR_TK_LEFT_PAREN;
 			result.length = 1;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case ')': /* TK_RIGHT_PAREN '(' */
+		case ')': /* SCR_TK_RIGHT_PAREN '(' */
 		{
-			result.which = TK_RIGHT_PAREN;
+			result.which = SCR_TK_RIGHT_PAREN;
 			result.length = 1;
 			*bytes_to_go -= result.length;
 			*view += result.length;
@@ -170,12 +170,12 @@ get_next_token(
 		}
 		case 'A' ... 'Z':
 		case 'a' ... 'z':
-		case '_': /* TK_IDENTIFIER and others */
+		case '_': /* SCR_TK_IDENTIFIER and others */
 		{
-			/* TK_TEXT */
-			/* TK_LINE */
-			/* TK_DONE */
-			/* TK_INIT */
+			/* SCR_TK_TEXT */
+			/* SCR_TK_LINE */
+			/* SCR_TK_DONE */
+			/* SCR_TK_INIT */
 			size_t ii;
 			size_t final_size = 0;
 			char *id_buffer;
@@ -208,71 +208,71 @@ get_next_token(
 			if (!strcmp(id_buffer, "init"))
 			{
 				free(id_buffer);
-				result.which = TK_INIT;
+				result.which = SCR_TK_INIT;
 				return result;
 			}
 			else if (!strcmp(id_buffer, "text"))
 			{
 				free(id_buffer);
-				result.which = TK_TEXT;
+				result.which = SCR_TK_TEXT;
 				return result;
 			}
 			else if (!strcmp(id_buffer, "line"))
 			{
 				free(id_buffer);
-				result.which = TK_LINE;
+				result.which = SCR_TK_LINE;
 				return result;
 			}
 			else if (!strcmp(id_buffer, "para"))
 			{
 				free(id_buffer);
-				result.which = TK_PARA;
+				result.which = SCR_TK_PARA;
 				return result;
 			}
 			else if (!strcmp(id_buffer, "cont"))
 			{
 				free(id_buffer);
-				result.which = TK_CONT;
+				result.which = SCR_TK_CONT;
 				return result;
 			}
 			else if (!strcmp(id_buffer, "done"))
 			{
 				free(id_buffer);
-				result.which = TK_DONE;
+				result.which = SCR_TK_DONE;
 				return result;
 			}
 			else
 			{
 				free(id_buffer);
-				result.which = TK_IDENTIFIER;
+				result.which = SCR_TK_IDENTIFIER;
 				return result;
 			}
 		}
-		case ':': /* TK_COLON */
+		case ':': /* SCR_TK_COLON */
 		{
-			result.which = TK_COLON;
+			result.which = SCR_TK_COLON;
 			result.length = 1;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case ',': /* TK_COMMA */
+		case ',': /* SCR_TK_COMMA */
 		{
-			result.which = TK_COMMA;
+			result.which = SCR_TK_COMMA;
 			result.length = 1;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case ';': /* TK_SEMICOLON */
+		case ';': /* SCR_TK_SEMICOLON */
 		{
-			result.which = TK_SEMICOLON;
+			result.which = SCR_TK_SEMICOLON;
 			result.length = 1;
 			*bytes_to_go -= result.length;
 			*view += result.length;
 			return result;
 		}
-		case '"': /* TK_QUOTED_STRING */
+		case '"': /* SCR_TK_QUOTED_STRING */
 		{
 			size_t ii;
 			size_t final_size = 0;
@@ -308,7 +308,7 @@ get_next_token(
 			/* Cover the ending quote too */
 			final_size = ii + 1;
 
-			result.which = TK_QUOTED_STRING;
+			result.which = SCR_TK_QUOTED_STRING;
 			result.length = final_size;
 			*bytes_to_go -= result.length;
 			*view += result.length;

@@ -12,7 +12,7 @@
 
 @org $08, $456d:
 	init NAME_BALLOT, $2a; # TEMP
-text "成功了﹗";
+	text "成功了﹗";
 	para "這就是媽媽料理";
 	line "的味道﹗";
 	done;
