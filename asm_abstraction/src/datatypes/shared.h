@@ -61,6 +61,7 @@ typedef enum
 	N_DATA_BLOCK,
 	N_DATA_CONTENT,
 	N_ASM_LITERAL,
+	N_ASSIGNMENT,
 } NodeKind;
 
 typedef Node GenericNode;
@@ -136,5 +137,12 @@ typedef struct
 	NodeKindId _;
 	const char *asm_content;
 } AsmLiteralNode;
+
+typedef struct
+{
+	NodeKindId _;
+	GenericNode *assign_target;
+	GenericNode *assign_value;
+} AssignmentNode;
 
 #endif // DATATYPES_SHARED_H

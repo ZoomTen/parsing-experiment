@@ -132,7 +132,18 @@ sub_content(A) ::= asm(B).
     add_node_generic(&A->sub_items, B);
 }
 
+sub_content(A) ::= assignment(B).
+{
+    A = (SubContentNode *) make_node(N_SUB_CONTENT);
+    add_node_generic(&A->sub_items, B);
+}
+
 sub_content(A) ::= sub_content(A) asm(B).
+{
+    add_node_generic(&A->sub_items, B);
+}
+
+sub_content(A) ::= sub_content(A) assignment(B).
 {
     add_node_generic(&A->sub_items, B);
 }
@@ -147,6 +158,21 @@ asm(A) ::= ASM OPEN_BRACKET ASM_LITERAL(B) CLOSE_BRACKET.
 {
     A = (AsmLiteralNode *) make_node(N_ASM_LITERAL);
     A->asm_content = B.word;
+}
+
+%type assignment { AssignmentNode* }
+assignment(A) ::= REGISTER(B) EQUALS REGISTER(C) SEMICOLON.
+{
+    A = (AssignmentNode *) make_node(N_ASSIGNMENT);
+
+    RegisterNode *lhs = (RegisterNode *) make_node(N_REGISTER);
+    lhs->reg_name = B.word;
+
+    RegisterNode *rhs = (RegisterNode *) make_node(N_REGISTER);
+    rhs->reg_name = C.word;
+
+    A->assign_target = (GenericNode *) lhs;
+    A->assign_value = (GenericNode *) rhs;
 }
 
 %syntax_error

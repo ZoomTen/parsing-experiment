@@ -76,6 +76,26 @@ proc `convert to asm`(p: NodeRef): void =
           else:
             "\t" & x
         )
+  of Assignment:
+    let
+      `left hand side` = p.assign_target
+      `right hand side` = p.assign_value
+
+    assert `left hand side`.kind in [NodeKind.Register, NodeKind.Identifier] # TODO
+    assert `right hand side`.kind in [NodeKind.Register, NodeKind.Identifier] # TODO
+
+    case `left hand side`.kind
+    of Register:
+      case `right hand side`.kind
+      of Register:
+        `debug echo`(
+          "\tld " & ($`left hand side`.reg_name)[1 ..^ 1] & ", " &
+            ($`right hand side`.reg_name)[1 ..^ 1]
+        )
+      else:
+        discard
+    else:
+      discard
   else:
     return
 

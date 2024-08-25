@@ -49,6 +49,7 @@ type
     DataBlock
     DataContent
     AsmLiteral
+    Assignment
 
   # each case-arm's structure on the Nim side MUST match the structure of
   # the different structs on the C side. `struct Seq` must be used to represent
@@ -85,5 +86,8 @@ type
       data_items*: seq[NodeRef]
     of AsmLiteral:
       asm_content*: cstring
-  
+    of Assignment:
+      assign_target*: NodeRef # Register / Identifier
+      assign_value*: NodeRef # Register / Identifier / Expr
+
   NodeRef* = ref Node
