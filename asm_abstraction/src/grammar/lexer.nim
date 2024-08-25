@@ -222,6 +222,14 @@ proc `get next token`*(lexer: var LexerState): Token =
     result.kind = Register
     result.word = `make a copy of string` `temp reg string`
     result.length = `temp reg string`.len.cint
+  of ';':
+    `advance buffer and length`()
+    result.kind = Semicolon
+    result.word = `make a copy of token from` `start position`
+  of '=':
+    `advance buffer and length`()
+    result.kind = Equals
+    result.word = `make a copy of token from` `start position`
   else:
     discard
   return result

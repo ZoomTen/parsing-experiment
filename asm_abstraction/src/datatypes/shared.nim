@@ -19,6 +19,8 @@ type
     AsmLiteral
     Register
     Data
+    Semicolon
+    Equals
 
   # State of the lexer that can be accessed from Lemon
   # Must match corresponding struct in ./shared.h

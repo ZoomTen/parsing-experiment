@@ -17,6 +17,8 @@
     ASM_LITERAL
     REGISTER
     DATA
+    SEMICOLON
+    EQUALS
 .
 
 /* storing additional information about my parser state */
