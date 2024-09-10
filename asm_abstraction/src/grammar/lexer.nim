@@ -1,3 +1,5 @@
+include ../gcc14_fix
+
 when NimMajor >= 2:
   import std/syncio
 import ../datatypes/shared

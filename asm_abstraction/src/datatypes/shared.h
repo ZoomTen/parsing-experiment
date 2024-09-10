@@ -41,11 +41,6 @@ typedef struct
 	NodeKindId _;
 } Node;
 
-typedef struct
-{
-	Node *tree;
-} InternalState;
-
 /* Must match enum order in ./shared.nim */
 typedef enum
 {
@@ -144,5 +139,10 @@ typedef struct
 	GenericNode *assign_target;
 	GenericNode *assign_value;
 } AssignmentNode;
+
+typedef struct
+{
+	ProgramNode *tree;
+} InternalState;
 
 #endif // DATATYPES_SHARED_H

@@ -38,20 +38,20 @@ start ::= program(A).
 %type program { ProgramNode* }
 program(A) ::= section(B).
 {
-    A = (ProgramNode *) make_node(N_PROGRAM);
-    add_node_generic(&A->program_items, B);
+    A = (ProgramNode *) (void *) make_node(N_PROGRAM);
+    add_node_generic(&A->program_items, (Node *) B);
 }
 
 program(A) ::= program(A) section(B).
 {
-    add_node_generic(&A->program_items, B);
+	add_node_generic(&A->program_items, (Node*) B);
 }
 
 %type section { SectionBlockNode* }
 section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET subs_datas(D) CLOSE_BRACKET.
 {
     A = (SectionBlockNode *) make_node(N_SECTION_BLOCK);
-    assign_node_ref_generic(&A->at_address, B);
+    assign_node_ref_generic((Node **) &A->at_address, (Node*) B);
     A->section_name = C.word;
     A->section_content = D;
 }
@@ -64,7 +64,7 @@ section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET subs_datas(D) CLOSE_BRACKET
 section(A) ::= rom_address(B) STRING(C) OPEN_BRACKET CLOSE_BRACKET.
 {
     A = (SectionBlockNode *) make_node(N_SECTION_BLOCK);
-    assign_node_ref_generic(&A->at_address, B);
+    assign_node_ref_generic((Node **) &A->at_address, (Node*) B);
     A->section_name = C.word;
 }
 
@@ -85,23 +85,23 @@ rom_address(A) ::= HEX_NUMBER(B) COLON HEX_NUMBER(C).
 subs_datas(A) ::= sub(B).
 {
     A = (SubAndDataListNode *) make_node(N_SUB_AND_DATA_LIST);
-    add_node_generic(&A->subs_datas, B);
+    add_node_generic(&A->subs_datas, (Node*) B);
 }
 
 subs_datas(A) ::= subs_datas(A) sub(B).
 {
-    add_node_generic(&A->subs_datas, B);
+    add_node_generic(&A->subs_datas, (Node*) B);
 }
 
 subs_datas(A) ::= data(B).
 {
     A = (SubAndDataListNode *) make_node(N_SUB_AND_DATA_LIST);
-    add_node_generic(&A->subs_datas, B);
+    add_node_generic(&A->subs_datas, (Node*) B);
 }
 
 subs_datas(A) ::= subs_datas(A) data(B).
 {
-    add_node_generic(&A->subs_datas, B);
+    add_node_generic(&A->subs_datas, (Node*) B);
 }
 
 %type sub { SubBlockNode* }
@@ -115,7 +115,7 @@ sub(A) ::= SUB IDENTIFIER(B) OPEN_PAREN CLOSE_PAREN OPEN_BRACKET sub_content(C) 
 {
     A = (SubBlockNode *) make_node(N_SUB_BLOCK);
     A->sub_name = B.word;
-    A->sub_content = C;
+    A->sub_content = (Seq *) C;
 }
 
 %type data { DataBlockNode* }
@@ -129,23 +129,23 @@ data(A) ::= DATA IDENTIFIER(B) OPEN_BRACKET CLOSE_BRACKET.
 sub_content(A) ::= asm(B).
 {
     A = (SubContentNode *) make_node(N_SUB_CONTENT);
-    add_node_generic(&A->sub_items, B);
+    add_node_generic(&A->sub_items, (Node*) B);
 }
 
 sub_content(A) ::= assignment(B).
 {
     A = (SubContentNode *) make_node(N_SUB_CONTENT);
-    add_node_generic(&A->sub_items, B);
+    add_node_generic(&A->sub_items, (Node*) B);
 }
 
 sub_content(A) ::= sub_content(A) asm(B).
 {
-    add_node_generic(&A->sub_items, B);
+    add_node_generic(&A->sub_items, (Node*) B);
 }
 
 sub_content(A) ::= sub_content(A) assignment(B).
 {
-    add_node_generic(&A->sub_items, B);
+    add_node_generic(&A->sub_items, (Node*) B);
 }
 
 %type asm { AsmLiteralNode* }
