@@ -1,4 +1,5 @@
-import std/syncio
+when NimMajor >= 2:
+  import std/syncio
 import ../datatypes/shared
 
 type
@@ -52,14 +53,14 @@ proc `get next token`*(lexer: var LexerState): Token =
 
   template `make a copy of string`(what: string): cstring =
     # Essentially a `strdup`.
-    let s = cast[cstring](alloc0impl(what.len + 1))
+    var s = cast[cstring](alloc0impl(what.len + 1))
     s[0].addr.`copy mem` what[0].addr, what.len
     s
 
   template `make a copy of token from`(`start position`: int): cstring =
     # Another `strdup`!
-    let s = cast[cstring](alloc0impl(result.length + 1))
-    s[0].addr.`copy mem` lexer.buffer[`start position`].addr, result.length
+    var s = cast[cstring](alloc0impl(result.length + 1))
+    s[0].addr.`copy mem` lexer.buffer[`start position`].unsafeAddr, result.length
     s
 
   template `buffer not exhausted yet`(): bool =
@@ -93,7 +94,7 @@ proc `get next token`*(lexer: var LexerState): Token =
       return result
     # Reset the state of the lexer
     lexer.`inline hacks` = None
-    result.kind = AsmLiteral
+    result.kind = AsmLiteralToken
     result.word = `make a copy of token from` `start position`
     return result
 
@@ -171,9 +172,9 @@ proc `get next token`*(lexer: var LexerState): Token =
       return result
     result.kind = String
     result.word = (
-      let # Special case here, we need the token to be without quotes
+      var # Special case here, we need the token to be without quotes
         s = cast[cstring](alloc0impl(result.length))
-      s[0].addr.`copy mem` lexer.buffer[`start position` + 1].addr, (result.length - 2)
+      s[0].addr.`copy mem` lexer.buffer[`start position` + 1].unsafeAddr, (result.length - 2)
       s
     )
   # Identifier (TK_IDENTIFIER)
@@ -196,7 +197,7 @@ proc `get next token`*(lexer: var LexerState): Token =
       of "sub": Sub
       of "asm": Asm
       of "data": Data
-      else: Identifier
+      else: IdentifierToken
     )
     if result.kind == Asm:
       lexer.`inline hacks` = `Got asm`
@@ -219,7 +220,7 @@ proc `get next token`*(lexer: var LexerState): Token =
     if (let s = `temp reg string`[1 .. ^1]; s not_in `all valid registers`):
       `notify error` "Invalid register " & s
       return result
-    result.kind = Register
+    result.kind = RegisterToken
     result.word = `make a copy of string` `temp reg string`
     result.length = `temp reg string`.len.cint
   of ';':

@@ -2,7 +2,7 @@ switch("define", "useMalloc")
 switch("define", "release")
 #switch("define", "nimPreviewSlimSystem")
 switch("threads", "off")
-switch("mm", "orc")
+switch(when NimMajor >= 2: "mm" else: "gc", "orc")
 switch("define", "lto")
 
 switch("nimcache", "nc")

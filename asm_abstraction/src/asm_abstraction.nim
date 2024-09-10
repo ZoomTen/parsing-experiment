@@ -1,4 +1,6 @@
-import std/[syncio, strutils]
+when NimMajor >= 2:
+  import std/syncio
+import std/strutils
 when not defined(nimPreviewSlimSystem):
   import pretty
 import ./datatypes/[shared, utils]
@@ -64,7 +66,7 @@ proc `convert to asm`(p: NodeRef): void =
     if p.data_content != nil:
       for item in p.data_content.data_items:
         item.`convert to asm`()
-  of AsmLiteral:
+  of AsmLiteralNode:
     assert p.asm_content != nil
     # bonus: "prettify" lines..
     for i in ($p.asm_content).split('\n'):
@@ -81,13 +83,13 @@ proc `convert to asm`(p: NodeRef): void =
       `left hand side` = p.assign_target
       `right hand side` = p.assign_value
 
-    assert `left hand side`.kind in [NodeKind.Register, NodeKind.Identifier] # TODO
-    assert `right hand side`.kind in [NodeKind.Register, NodeKind.Identifier] # TODO
+    assert `left hand side`.kind in [NodeKind.RegisterNode, NodeKind.IdentifierNode] # TODO
+    assert `right hand side`.kind in [NodeKind.RegisterNode, NodeKind.IdentifierNode] # TODO
 
     case `left hand side`.kind
-    of Register:
+    of RegisterNode:
       case `right hand side`.kind
-      of Register:
+      of RegisterNode:
         `debug echo`(
           "\tld " & ($`left hand side`.reg_name)[1 ..^ 1] & ", " &
             ($`right hand side`.reg_name)[1 ..^ 1]

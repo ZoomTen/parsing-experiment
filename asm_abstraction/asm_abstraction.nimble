@@ -7,7 +7,7 @@ license = "MIT"
 srcDir = "src"
 bin = @["asm_abstraction"]
 
-requires "nim >= 2.0.4"
+requires "nim >= 1.4.0"
 requires "pretty"
 
 before build:

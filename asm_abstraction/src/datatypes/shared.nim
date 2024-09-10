@@ -11,13 +11,13 @@ type
     String
     OpenBracket
     CloseBracket
-    Identifier
+    IdentifierToken
     Sub
     OpenParen
     CloseParen
     Asm
-    AsmLiteral
-    Register
+    AsmLiteralToken
+    RegisterToken
     Data
     Semicolon
     Equals
@@ -38,17 +38,17 @@ type
   # Must match enum order in ./shared.h
   NodeKind* {.size: sizeof(int64).} = enum
     Generic = 0
-    Identifier
+    IdentifierNode
     RomAddress
     SectionBlock
     SubBlock
-    Register
+    RegisterNode
     Program
     SubAndDataList
     SubContent
     DataBlock
     DataContent
-    AsmLiteral
+    AsmLiteralNode
     Assignment
 
   # each case-arm's structure on the Nim side MUST match the structure of
@@ -58,7 +58,7 @@ type
     case kind*: NodeKind
     of Generic:
       discard
-    of Identifier:
+    of IdentifierNode:
       ident*: cstring
     of RomAddress:
       bank*: cint
@@ -71,7 +71,7 @@ type
     of SubBlock:
       sub_name*: cstring
       sub_content*: NodeRef # SubContent
-    of Register:
+    of RegisterNode:
       reg_name*: cstring
     of Program:
       program_items*: seq[NodeRef]
@@ -84,7 +84,7 @@ type
       data_content*: NodeRef # DataContent
     of DataContent:
       data_items*: seq[NodeRef]
-    of AsmLiteral:
+    of AsmLiteralNode:
       asm_content*: cstring
     of Assignment:
       assign_target*: NodeRef # Register / Identifier
